@@ -1,0 +1,6 @@
+[package]
+name = "智能壁纸"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
