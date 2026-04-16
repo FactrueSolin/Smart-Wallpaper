@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, world!");
+    println!("Wallpaper manager module is ready to be integrated.");
 }

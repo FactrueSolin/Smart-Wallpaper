@@ -1,0 +1,43 @@
+use std::path::PathBuf;
+
+use thiserror::Error;
+
+use crate::wallpaper_manager::domain::{BatchSetReport, ScreenId};
+
+#[derive(Debug, Error)]
+pub enum WallpaperError {
+    #[error("screen not found: {0}")]
+    ScreenNotFound(ScreenId),
+    #[error("invalid image path: {0}")]
+    InvalidImagePath(PathBuf),
+    #[error("unsupported image format: {0}")]
+    UnsupportedImageFormat(PathBuf),
+    #[error("permission denied: {0}")]
+    PermissionDenied(PathBuf),
+    #[error("main thread violation")]
+    MainThreadViolation,
+    #[error("platform API error: {0}")]
+    PlatformApiError(String),
+    #[error("screen topology changed")]
+    ScreenTopologyChanged,
+    #[error("ambiguous screen mapping")]
+    AmbiguousScreenMapping,
+    #[error("partial failure: {0:?}")]
+    PartialFailure(BatchSetReport),
+}
+
+impl WallpaperError {
+    pub fn code(&self) -> &'static str {
+        match self {
+            Self::ScreenNotFound(_) => "screen_not_found",
+            Self::InvalidImagePath(_) => "invalid_image_path",
+            Self::UnsupportedImageFormat(_) => "unsupported_image_format",
+            Self::PermissionDenied(_) => "permission_denied",
+            Self::MainThreadViolation => "main_thread_violation",
+            Self::PlatformApiError(_) => "platform_api_error",
+            Self::ScreenTopologyChanged => "screen_topology_changed",
+            Self::AmbiguousScreenMapping => "ambiguous_screen_mapping",
+            Self::PartialFailure(_) => "partial_failure",
+        }
+    }
+}
