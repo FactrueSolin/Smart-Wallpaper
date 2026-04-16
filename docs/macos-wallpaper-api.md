@@ -84,6 +84,84 @@ Apple 公开了桌面图片选项键，至少包括这几个常用项：
 
 文档页把这些键定义为 `NSWorkspace.DesktopImageOptionKey`。
 
+## 壁纸文件格式要求
+
+这是最容易被误解的部分。Apple 的公开文档**没有**给 `setDesktopImageURL(_:for:options:)` 单独列出一份“壁纸支持格式白名单”。更可信的理解是：
+
+- 该 API 要求传入一个 `URL`
+- 这个 `URL` 在实际使用中应当是一个**本地文件 URL**
+- 目标文件需要是 **macOS 当前系统能够解码的图片文件**
+
+也就是说，壁纸 API 本身并不按扩展名做一套独立规则；它依赖的是 AppKit / Image I/O 的图像读取能力。
+
+### Apple 官方能明确支持到什么程度
+
+根据 Apple 的 `NSImage` 文档：
+
+- `NSImage` 可以处理系统支持的多种图像格式
+- `NSImage.imageTypes` 可以返回当前系统上可读的图像类型标识
+
+根据 Apple 的 Image I/O 文档：
+
+- `CGImageSource` 可用于读取“大多数图片文件格式”
+- `CGImageSourceCopyTypeIdentifiers()` 可以返回**当前系统实际支持**的图片类型列表
+
+因此，关于“哪些文件能被设置成壁纸”，最稳妥的结论是：
+
+- **能被当前 macOS 版本的 `NSImage` / Image I/O 成功读取的本地图片文件，通常就可以作为壁纸输入文件**
+
+### 可作为工程默认支持的常见格式
+
+下面这些格式属于 Apple 文档和 Image I/O 语境下的常见、稳定选择，适合作为你项目里的“默认支持格式”：
+
+- `JPEG` / `.jpg` / `.jpeg`
+- `PNG` / `.png`
+- `TIFF` / `.tiff`
+- `HEIC` / `.heic`
+- `GIF` / `.gif`
+- `BMP` / `.bmp`
+
+但这里要注意两点：
+
+- 这不是 `setDesktopImageURL` 文档给出的封闭白名单
+- 实际支持范围仍然取决于用户当前 macOS 版本和系统已注册的图像解码能力
+
+### 不建议只靠文件扩展名判断
+
+如果你要做“智能壁纸”应用，不建议只看后缀名，例如：
+
+- 不能因为文件名是 `.jpg` 就认定一定可用
+- 也不能因为是较少见格式就直接认定一定不可用
+
+更可靠的做法是：
+
+1. 先确认文件是本地可读文件
+2. 再用 `NSImage` 或 `CGImageSourceCreateWithURL` 实际尝试解析
+3. 解析成功后再调用 `setDesktopImageURL`
+
+### Rust 侧的建议校验策略
+
+如果你在 Rust 中实现预校验，推荐分两层：
+
+- 轻校验：检查扩展名是否在你的“产品允许列表”里
+- 强校验：调用 macOS 原生图像解码能力，确认该文件真能被系统读成图片
+
+比起维护一份手写扩展名白名单，下面两种官方路径更可信：
+
+- 使用 `NSImage.imageTypes` 获取当前系统支持的图像类型
+- 使用 Image I/O 的 `CGImageSourceCopyTypeIdentifiers()` 获取当前系统支持的源格式
+
+这意味着你的应用可以把“支持哪些壁纸格式”定义成：
+
+- 产品层面：你愿意接受哪些常见格式
+- 系统层面：macOS 当前版本实际能解码哪些格式
+
+### 文档层面的推荐表述
+
+如果你后续还要在 README、PR 或产品文档里描述格式要求，建议使用下面这种表述：
+
+> macOS 官方壁纸 API 不提供单独的固定格式白名单。应用应传入本地图片文件 URL，文件是否可作为壁纸取决于当前 macOS 的图像解码能力。工程上建议优先支持 JPEG、PNG、TIFF、HEIC 等常见格式，并在设置前用 `NSImage` 或 Image I/O 做实际可读性校验。
+
 ## 能力边界
 
 当前公开 SDK 能确认的边界如下。
@@ -196,6 +274,22 @@ Apple 对 `desktopImageOptions(for:)` 明确要求主线程调用。考虑到这
 - 你通常要先把图片下载到本地
 - 然后传 `file://` 对应的 `NSURL`
 
+### 3.1 文件格式应以“系统可解码”为准
+
+不要把“支持的壁纸格式”写死成一小撮扩展名。更准确的判断标准是：
+
+- 文件必须是本地图片文件
+- 文件必须能被当前 macOS 的 `NSImage` / Image I/O 解码
+
+工程上建议优先支持：
+
+- `jpg/jpeg`
+- `png`
+- `tiff`
+- `heic`
+
+如果产品需要更高兼容性，可以在设置前显式尝试解码文件，而不是仅按扩展名放行。
+
 ### 4. 沙盒应用要有文件读取权限
 
 如果你的 App 是 sandboxed macOS App，那么它不仅要能调用该 API，还必须对目标图片文件拥有读取权限；否则即使接口本身公开，也会因为文件访问受限而失败。
@@ -288,6 +382,16 @@ fn main() {
   - https://developer.apple.com/documentation/appkit/nsworkspacedesktopimageallowclippingkey
 - Apple Developer: `NSWorkspaceDesktopImageFillColorKey`
   - https://developer.apple.com/documentation/appkit/nsworkspacedesktopimagefillcolorkey
+- Apple Developer: `NSImage`
+  - https://developer.apple.com/documentation/appkit/nsimage
+- Apple Developer: `CGImageSource`
+  - https://developer.apple.com/documentation/imageio/cgimagesource
+- Apple Developer: `CGImageSourceCopyTypeIdentifiers`
+  - https://developer.apple.com/documentation/imageio/cgimagesourcecopytypeidentifiers()
+- Apple Developer Archive: Image I/O Programming Guide
+  - https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/ImageIOGuide/imageio_basics/ikpg_basics.html
+- Apple Developer Archive: Cocoa Drawing Guide, Images
+  - https://developer.apple.com/library/archive/documentation/Cocoa/Conceptual/CocoaDrawingGuide/Images/Images.html
 - docs.rs: `objc2-app-kit::NSWorkspace`
   - https://docs.rs/objc2-app-kit/latest/objc2_app_kit/struct.NSWorkspace.html
 - docs.rs source: `NSWorkspaceDesktopImageOptionKey` 与 `setDesktopImageURL_forScreen_options_error`
