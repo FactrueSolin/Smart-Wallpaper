@@ -41,6 +41,15 @@ impl WallpaperStateStore {
         };
     }
 
+    pub fn replace_states(&mut self, wallpapers: Vec<WallpaperState>) {
+        self.states_by_screen = wallpapers
+            .iter()
+            .cloned()
+            .map(|state| (state.screen_id.clone(), state))
+            .collect();
+        self.snapshot.wallpapers = wallpapers;
+    }
+
     pub fn upsert_state(&mut self, state: WallpaperState) {
         let screen_id = state.screen_id.clone();
         self.states_by_screen
@@ -63,6 +72,10 @@ impl WallpaperStateStore {
 
     pub fn get_screen(&self, screen_id: &ScreenId) -> Option<&ScreenDescriptor> {
         self.screens_by_id.get(screen_id)
+    }
+
+    pub fn screens(&self) -> &[ScreenDescriptor] {
+        &self.snapshot.screens
     }
 
     pub fn contains_screen(&self, screen_id: &ScreenId) -> bool {

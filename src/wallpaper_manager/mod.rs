@@ -9,7 +9,7 @@ pub mod store;
 pub use application::WallpaperManager;
 pub use backend::WallpaperBackend;
 pub use bridge::swift_backend::SwiftAppKitBridgeBackend;
-pub use display_watcher::{DisplayChangeEvent, DisplayWatcher};
+pub use display_watcher::{DisplayChangeEvent, DisplayWatcher, SnapshotDisplayWatcher};
 pub use domain::{
     BatchSetReport, DisplayFingerprint, ScreenDescriptor, ScreenFrame, ScreenId,
     ScreenMatchQuality, ScreenOperationError, ScreenSize, WallpaperAssignment, WallpaperOptions,
