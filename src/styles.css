@@ -1,0 +1,135 @@
+:root {
+  color: #f7f2e8;
+  background:
+    radial-gradient(circle at top, rgba(255, 189, 89, 0.22), transparent 30%),
+    linear-gradient(135deg, #0f1723 0%, #13283a 45%, #27465d 100%);
+  font-family: "Avenir Next", "PingFang SC", "Microsoft YaHei", sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+code {
+  margin: 0 0.2rem;
+  padding: 0.1rem 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.1);
+  font-family: "SFMono-Regular", "SF Mono", Monaco, monospace;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.app-shell {
+  display: grid;
+  gap: 1.5rem;
+  max-width: 1040px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+}
+
+.hero,
+.card,
+.next-steps {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 24px;
+  background: rgba(9, 15, 25, 0.55);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+}
+
+.hero {
+  padding: 2rem;
+}
+
+.hero h1,
+.next-steps h2 {
+  margin: 0;
+  letter-spacing: -0.04em;
+}
+
+.hero h1 {
+  font-size: clamp(2.8rem, 7vw, 5.8rem);
+}
+
+.eyebrow {
+  margin: 0 0 1rem;
+  color: #ffca7a;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.78rem;
+}
+
+.lead {
+  max-width: 42rem;
+  margin: 1rem 0 0;
+  color: rgba(247, 242, 232, 0.82);
+  font-size: 1.05rem;
+}
+
+.status-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.card,
+.next-steps {
+  padding: 1.4rem;
+}
+
+.card-label {
+  display: block;
+  margin-bottom: 0.75rem;
+  color: rgba(247, 242, 232, 0.62);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+}
+
+.card strong {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: 1.35rem;
+}
+
+.card p,
+.next-steps p {
+  margin: 0;
+  color: rgba(247, 242, 232, 0.75);
+}
+
+.next-steps h2 {
+  margin-bottom: 0.6rem;
+  font-size: 1.4rem;
+}
+
+@media (max-width: 720px) {
+  .app-shell {
+    padding: 1.25rem 1rem 2rem;
+  }
+
+  .status-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .hero,
+  .card,
+  .next-steps {
+    border-radius: 20px;
+  }
+}
